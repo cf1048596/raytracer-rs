@@ -11,5 +11,4 @@ pub fn write_color(pixel_color: &Color) -> () {
     let ig : u32 = (255.999 * g) as u32;
     let ib : u32 = (255.999 * b) as u32;
     println!("{} {} {}", ir, ig, ib);
-    
 }

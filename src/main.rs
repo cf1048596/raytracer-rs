@@ -1,7 +1,8 @@
 mod vec3;
 mod color;
 mod ray;
-
+mod sphere;
+mod helper;
 
 use color::write_color;
 use color::Color;
@@ -10,23 +11,31 @@ use vec3::unit_vector;
 use vec3::Vec3;
 use vec3::Point3;
 use std::io::{self, Write};
-use std::mem::Discriminant;
 use ray::Ray;
 
-fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
     let oc = *center - r.origin();
-    let a = dot(&r.dir(), &r.dir());
-    let b = -2_f64 * dot(&r.dir(), &oc);
-    let c = dot(&oc, &oc) - radius.powi(2);
-    let discriminant = b.powi(2) - 4_f64*a*c;
-    discriminant >= 0_f64
+    let a = r.dir().get_len_squared();
+    let h = dot(&r.dir(), &oc);
+    let c = oc.get_len_squared() - radius.powi(2);
+    let discriminant = h.powi(2) - a*c;
+    match discriminant {
+        d if d < 0_f64 => {
+            -1.0_f64
+        }
+        _ => {
+            h-discriminant.sqrt() / a
+        }
+    }
 }
 
 
 fn ray_color(ray: &Ray) -> Color {
     let center_point : Point3 = Point3::new(0_f64, 0_f64, -1_f64);
-    if hit_sphere(&center_point, 0.5_f64, ray) {
-        Color::new(1_f64, 0_f64, 0_f64)
+    let t = hit_sphere(&center_point, 0.5_f64, ray);
+    if t > 0_f64 {
+        let surface_normal = unit_vector(&(ray.at(t) - center_point));
+        0.5_f64*Color::new(surface_normal.x()+1_f64, surface_normal.y()+1_f64, surface_normal.z()+1_f64)
     } else {
         let unit_direction : Vec3 = unit_vector(&ray.dir());
         let a = 0.5*unit_direction.y()+1.0;

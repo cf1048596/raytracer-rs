@@ -3,44 +3,31 @@ mod color;
 mod ray;
 mod sphere;
 mod helper;
+mod interval;
 
 use color::write_color;
+use helper::INFINITY;
+use ray::HitRecord;
+use ray::Hittable;
+use sphere::Sphere;
 use color::Color;
 use vec3::dot;
 use vec3::unit_vector;
 use vec3::Vec3;
 use vec3::Point3;
 use std::io::{self, Write};
+use std::rc::Rc;
 use ray::Ray;
+use ray::HittableList;
 
-fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
-    let oc = *center - r.origin();
-    let a = r.dir().get_len_squared();
-    let h = dot(&r.dir(), &oc);
-    let c = oc.get_len_squared() - radius.powi(2);
-    let discriminant = h.powi(2) - a*c;
-    match discriminant {
-        d if d < 0_f64 => {
-            -1.0_f64
-        }
-        _ => {
-            h-discriminant.sqrt() / a
-        }
+fn ray_color(ray: &Ray,  world: &dyn Hittable) -> Color {
+    let mut hit_rec : HitRecord = HitRecord::new_empty();
+    if world.hit(ray, 0_f64, INFINITY, &mut hit_rec) {
+        return 0.5_f64 * (hit_rec.normal + Color::new(1_f64, 1_f64, 1_f64));
     }
-}
-
-
-fn ray_color(ray: &Ray) -> Color {
-    let center_point : Point3 = Point3::new(0_f64, 0_f64, -1_f64);
-    let t = hit_sphere(&center_point, 0.5_f64, ray);
-    if t > 0_f64 {
-        let surface_normal = unit_vector(&(ray.at(t) - center_point));
-        0.5_f64*Color::new(surface_normal.x()+1_f64, surface_normal.y()+1_f64, surface_normal.z()+1_f64)
-    } else {
-        let unit_direction : Vec3 = unit_vector(&ray.dir());
-        let a = 0.5*unit_direction.y()+1.0;
-        (1.0-a)*Color::new(1.0, 1.0, 1.0) + a*Color::new(0.5, 0.7, 1.0)
-    }
+    let unit_dir : Vec3 = unit_vector(&ray.dir());
+    let a = 0.5_f64*(unit_dir.y() + 1_f64);
+    (1_f64-a)*Color::new(1_f64, 1_f64, 1_f64) + a*Color::new(0.5_f64, 0.7_f64, 1_f64)
 }
 
 fn main() {
@@ -48,10 +35,13 @@ fn main() {
     //image
     let aspect_ratio = 16.0 / 9.0;
     let img_width = 400;
+    let mut world : HittableList = HittableList::new();
 
     //calculate image height and make sure at the very minimum it's 1
-    let img_height = (img_width/aspect_ratio as u32).max(1);
-
+    let mut img_height = (img_width as f64 / aspect_ratio) as i32;
+    img_height = if img_height < 1 { 1 } else { img_height };
+    world.add(Rc::new(Sphere::new(Point3::new(0_f64, 0_f64,-1_f64), 0.5)));
+    world.add(Rc::new(Sphere::new(Point3::new(0_f64, -100.5,-1_f64), 100_f64)));
 
     //camera details
     let focal_len = 1.0;
@@ -84,8 +74,8 @@ fn main() {
         for x in 0..img_width {
             let pixel_center = pixel00_loc + (x as f64 *pixel_delta_u) + (y as f64 *pixel_delta_v);
             let ray_direction = pixel_center - camera_center;
-            let mut r : Ray = Ray::new(camera_center, ray_direction);
-            let pixel_color : Color = ray_color(&r); 
+            let r : Ray = Ray::new(camera_center, ray_direction);
+            let pixel_color : Color = ray_color(&r, &world);
             write_color(&pixel_color);
         }
     }

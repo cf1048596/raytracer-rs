@@ -65,13 +65,19 @@ impl HitRecord {
     }
 }
 
-
 pub struct HittableList {
     objects : Vec<Rc<dyn Hittable>>,
 }
 
 impl HittableList {
-
+    pub fn new() -> Self {
+        Self {
+            objects : Vec::new()
+        }
+    }
+    pub fn add(&mut self, object:Rc<dyn Hittable>) -> () {
+        self.objects.push(object);
+    }
 }
 
 impl Hittable for HittableList {

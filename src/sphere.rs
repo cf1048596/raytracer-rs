@@ -1,4 +1,4 @@
-use crate::{ray::SetFaceNormal, vec3::{dot, Point3}, Vec3};
+use crate::{interval::Interval, ray::SetFaceNormal, vec3::{dot, Point3}, Vec3};
 use crate::ray::Hittable;
 use crate::ray::HitRecord;
 use crate::ray::Ray;
@@ -18,7 +18,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray :&Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, ray :&Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let oc = self.center - ray.origin();
         let a = ray.dir().get_len_squared();
         let h = dot(&ray.dir(), &oc);
@@ -31,16 +31,16 @@ impl Hittable for Sphere {
             _ => {
                 let sqrtd = discriminant.sqrt();
                 let mut root = (h-sqrtd)/a;
-                if root <= ray_tmin || root >= ray_tmax {
+                if !ray_t.surrounds(root) {
                     root = (h+sqrtd)/a;
-                    if root <= ray_tmin || ray_tmax <= root {
+                    if !ray_t.surrounds(root) {
                         return false;
                     }
                 }
                 rec.t =  root;
                 rec.p = ray.at(rec.t);
                 let outward_normal = (rec.p - self.center) / self.radius;
-                rec.set_face_normal(&ray, &outward_normal);
+                rec.set_face_normal(ray, &outward_normal);
                 true
             }
         }

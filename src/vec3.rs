@@ -16,8 +16,12 @@ pub type Point3 = Vec3;
 
 impl Vec3 {
 
-    pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
-        Vec3 { e: [x, y, z] }
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
+        Self { e: [x, y, z] }
+    }
+
+    pub fn new_empty() -> Self {
+        Self { e: [0.into(), 0.into(), 0.into()] }
     }
 
     pub fn get(&self, i: usize) -> f64 {
@@ -155,8 +159,8 @@ pub fn dot(u : &Vec3, v: &Vec3) -> f64 {
 
 pub fn cross(u : &Vec3, v: &Vec3) -> Vec3 {
     Vec3::new(u.e[1] * v.e[2] - u.e[2] * v.e[1],
-                u.e[2] * v.e[0] - u.e[0] * v.e[2],
-                u.e[0] * v.e[1] - u.e[1] * v.e[0])
+        u.e[2] * v.e[0] - u.e[0] * v.e[2],
+        u.e[0] * v.e[1] - u.e[1] * v.e[0])
 }
 
 pub fn unit_vector(u: &Vec3) -> Vec3 {

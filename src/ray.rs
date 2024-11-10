@@ -1,6 +1,6 @@
 use std::{fmt::Pointer, rc::Rc, sync::Arc};
 
-use crate::{vec3::{dot, Point3}, Vec3};
+use crate::{interval::{self, Interval}, vec3::{dot, Point3}, Vec3};
 
 #[derive(Copy, Clone, Debug)]
 pub struct HitRecord {
@@ -16,8 +16,8 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn new(orig: Point3, direction: Vec3) -> Ray {
-        Ray {
+    pub fn new(orig: Point3, direction: Vec3) -> Self {
+        Self {
             origin: orig,
             dir : direction,
         }
@@ -37,7 +37,7 @@ impl Ray {
 }
 
 pub trait Hittable {
-    fn hit(&self, ray :&Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool;
+    fn hit(&self, ray :&Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
 }
 
 pub trait SetFaceNormal {
@@ -55,8 +55,8 @@ impl SetFaceNormal for HitRecord {
 }
 
 impl HitRecord {
-    pub fn new_empty() -> HitRecord {
-        HitRecord {
+    pub fn new_empty() -> Self {
+        Self {
             p : Point3::new(0_f64, 0_f64, 0_f64),
             normal : Vec3::new(0_f64, 0_f64, 0_f64),
             t : 0_f64,
@@ -75,19 +75,19 @@ impl HittableList {
             objects : Vec::new()
         }
     }
-    pub fn add(&mut self, object:Rc<dyn Hittable>) -> () {
+    pub fn add(&mut self, object:Rc<dyn Hittable>) {
         self.objects.push(object);
     }
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, ray :&Ray, ray_tmin: f64, ray_tmax: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, ray :&Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let mut temp_rec : HitRecord = HitRecord::new_empty();
         let mut hit_anything : bool = false;
-        let mut closest_so_far = ray_tmax;
+        let mut closest_so_far = ray_t.max;
 
         for object in &self.objects {
-            if object.hit(ray, ray_tmin, closest_so_far, &mut temp_rec) {
+            if object.hit(ray, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 *rec = temp_rec

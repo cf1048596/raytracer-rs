@@ -6,7 +6,6 @@ pub struct Interval {
 }
 
 impl Interval {
-
     pub fn new_empty() -> Self {
         Self {
             min: INFINITY,
@@ -26,11 +25,19 @@ impl Interval {
     }
 
     pub fn contains(&self, x: f64) -> bool {
-        self.min <= x && self.max >= x
+        self.min <= x && self.max <= x
     }
 
     pub fn surrounds(&self, x: f64) -> bool {
-        self.min < x && x > self.max
+        self.min < x && x < self.max
+    }
+
+    pub fn clamp(&self, x: f64) -> f64 {
+        match x {
+            n if n < self.min => self.min,
+            n if n > self.max => self.max,
+            _ => x,
+        }
     }
 }
 

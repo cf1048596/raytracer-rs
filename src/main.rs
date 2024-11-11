@@ -17,7 +17,7 @@ fn main() {
     let mut world : HittableList = HittableList::new();
     world.add(Rc::new(Sphere::new(Point3::new(0_f64, 0_f64,-1_f64), 0.5)));
     world.add(Rc::new(Sphere::new(Point3::new(0_f64, -100.5,-1_f64), 100_f64)));
-    //aspect ratio, img_width, pixels_per_sample
-    let mut cam : Camera = Camera::new(16_f64/9_f64, 400, 100);
+    //aspect ratio, img_width, pixels_per_sample, depth
+    let mut cam : Camera = Camera::new(16_f64/9_f64, 400, 100, 50);
     cam.render(&world);
 }

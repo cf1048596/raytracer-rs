@@ -7,6 +7,9 @@ use std::ops::Sub;
 use std::ops::Mul;
 use std::ops::Div;
 
+use crate::helper::random_f64;
+use crate::helper::random_f64_range;
+
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3 {
     e: [f64; 3],
@@ -51,7 +54,14 @@ impl Vec3 {
     pub fn get_len(&self) -> f64 {
         self.get_len_squared().sqrt()
     }
- 
+
+    pub fn random() -> Self {
+        Self::new(random_f64(), random_f64(), random_f64())
+    }
+
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self::new(random_f64_range(min, max), random_f64_range(min, max), random_f64_range(min, max))
+    }
 }
 
 impl Neg for Vec3 {
@@ -87,9 +97,9 @@ impl DivAssign<f64> for Vec3 {
 
 
 impl Add for Vec3 {
-    type Output =  Vec3;
-    fn add(self, othervec: Vec3) -> Vec3 {
-       Vec3 {
+    type Output =  Self;
+    fn add(self, othervec: Vec3) -> Self {
+       Self {
            e: [
                 self.e[0] + othervec.e[0],
                 self.e[1] + othervec.e[1],
@@ -100,9 +110,9 @@ impl Add for Vec3 {
 }
 
 impl Sub for Vec3 {
-    type Output =  Vec3;
-    fn sub(self, othervec: Vec3) -> Vec3 {
-       Vec3 {
+    type Output =  Self;
+    fn sub(self, othervec: Vec3) -> Self {
+       Self {
            e: [
                 self.e[0] - othervec.e[0],
                 self.e[1] - othervec.e[1],
@@ -114,8 +124,8 @@ impl Sub for Vec3 {
 
 impl Mul for Vec3 {
     type Output =  Vec3;
-    fn mul(self, othervec: Vec3) -> Vec3 {
-       Vec3 {
+    fn mul(self, othervec: Vec3) -> Self {
+       Self {
            e: [
                 self.e[0] * othervec.e[0],
                 self.e[1] * othervec.e[1],
@@ -145,7 +155,7 @@ impl Div<Vec3> for f64 {
 impl Div<f64> for Vec3 {
     type Output = Vec3;
 
-    fn div(self, scalar: f64) -> Vec3 {
+    fn div(self, scalar: f64) -> Self {
         (1_f64/scalar) * self
     }
 }
@@ -165,4 +175,22 @@ pub fn cross(u : &Vec3, v: &Vec3) -> Vec3 {
 
 pub fn unit_vector(u: &Vec3) -> Vec3 {
     *u / u.get_len()
+}
+
+pub fn random_unit_vector(u: &Vec3) -> Vec3 {
+    loop {
+        let p = Vec3::random_range(-1_f64, 1_f64);
+        let lensq = p.get_len_squared();
+        if lensq <= 1_f64  && 1e-160_f64 < lensq {
+            return p / lensq.sqrt();
+        }
+    }
+}
+
+pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
+    let on_unit_sphere = random_unit_vector(normal);
+    match dot(&on_unit_sphere, normal) {
+        n if n > 0.0 =>  on_unit_sphere, //same hemisphere as the normal
+        _ =>  -on_unit_sphere
+    }
 }

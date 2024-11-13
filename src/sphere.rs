@@ -1,4 +1,6 @@
-use crate::{interval::Interval, ray::SetFaceNormal, vec3::{dot, Point3}, Vec3};
+use std::rc::Rc;
+
+use crate::{interval::Interval, ray::{Scatter, SetFaceNormal}, vec3::{dot, Point3}, Vec3};
 use crate::ray::Hittable;
 use crate::ray::HitRecord;
 use crate::ray::Ray;
@@ -6,13 +8,15 @@ use crate::ray::Ray;
 pub struct Sphere { 
     center: Point3,
     radius: f64,
+    mat : Option<Rc<dyn Scatter>>,
 }
 
 impl Sphere {
-    pub fn new(_center: Point3, _radius: f64) -> Sphere {
+    pub fn new(_center: Point3, _radius: f64, material: Rc<dyn Scatter>) -> Sphere {
         Sphere {
             center: _center,
             radius: _radius.max(0_f64),
+            mat : Some(material),
         }
     }
 }
@@ -41,6 +45,7 @@ impl Hittable for Sphere {
                 rec.p = ray.at(rec.t);
                 let outward_normal = (rec.p - self.center) / self.radius;
                 rec.set_face_normal(ray, &outward_normal);
+                rec.mat = self.mat.clone();
                 true
             }
         }

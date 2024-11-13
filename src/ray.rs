@@ -1,11 +1,12 @@
-use std::{fmt::Pointer, rc::Rc, sync::Arc};
+use std::{fmt::{write, Pointer}, rc::Rc, sync::Arc};
 
-use crate::{interval::{self, Interval}, vec3::{dot, Point3}, Vec3};
+use crate::{color::Color, interval::{self, Interval}, vec3::{dot, random_unit_vector, reflect, unit_vector, Point3}, Vec3};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone)]
 pub struct HitRecord {
     pub p : Point3,
     pub normal: Vec3,
+    pub mat: Option<Rc<dyn Scatter>>,
     pub t : f64,
     pub front_face : bool,
 }
@@ -20,6 +21,13 @@ impl Ray {
         Self {
             origin: orig,
             dir : direction,
+        }
+    }
+
+    pub fn new_empty() -> Self {
+        Self {
+            origin: Point3::new_empty(),
+            dir: Vec3::new_empty(),
         }
     }
 
@@ -59,6 +67,7 @@ impl HitRecord {
         Self {
             p : Point3::new(0_f64, 0_f64, 0_f64),
             normal : Vec3::new(0_f64, 0_f64, 0_f64),
+            mat : None,
             t : 0_f64,
             front_face : false,
         }
@@ -90,9 +99,13 @@ impl Hittable for HittableList {
             if object.hit(ray, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
-                *rec = temp_rec
+                *rec = temp_rec.clone()
             }
         }
         hit_anything
     }
+}
+
+pub trait Scatter {
+    fn scatter(&self, ray_in : &Ray, hit_rec: &HitRecord, attenuation: &mut Color, scattered_ray: &mut Ray) -> bool;
 }

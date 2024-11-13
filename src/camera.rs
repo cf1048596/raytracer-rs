@@ -1,5 +1,5 @@
-use std::{io::{self, Write}, result};
-use crate::{color::{write_color, Color}, helper::{random_f64, random_f64_range}, interval::Interval, ray::{HitRecord, Hittable, Ray}, vec3::{self, random_on_hemisphere, unit_vector, Point3, Vec3}};
+use std::{io::{self, Write}, rc::Rc, result};
+use crate::{color::{write_color, Color}, helper::{random_f64, random_f64_range}, interval::Interval, ray::{HitRecord, Hittable, Ray, Scatter}, vec3::{self, random_on_hemisphere, random_unit_vector, unit_vector, Point3, Vec3}};
 use crate::helper::INFINITY;
 
 pub struct Camera {
@@ -85,11 +85,17 @@ impl Camera {
             return Color::new_empty();
         }
 
-
         let mut hit_rec : HitRecord = HitRecord::new_empty();
-        if world.hit(ray, Interval::new(0_f64, INFINITY), &mut hit_rec) {
-            let direction : Vec3 = random_on_hemisphere(&hit_rec.normal);
-            return 0.5_f64 * self.ray_color(&Ray::new(hit_rec.p, direction), world, depth-1);
+        if world.hit(ray, Interval::new(0.001, INFINITY), &mut hit_rec) {
+            let mut scattered_ray : Ray = Ray::new_empty();
+            let mut attenuation : Color =  Color::new_empty();
+            if hit_rec.mat.clone().expect("shouldn't crash rite").scatter(ray, &mut hit_rec, &mut attenuation, &mut scattered_ray) {
+                return attenuation * self.ray_color(&scattered_ray, world, depth-1);
+            }
+            //let direction : Vec3 = hit_rec.normal + random_unit_vector();
+            //leading number is reflectance factor
+            //return 0.5_f64 * self.ray_color(&Ray::new(hit_rec.p, direction), world, depth-1);
+            return Color::new(0_f64, 0_f64, 0_f64);
         }
         let unit_dir : Vec3 = unit_vector(&ray.dir());
         let a = 0.5_f64*(unit_dir.y() + 1_f64);

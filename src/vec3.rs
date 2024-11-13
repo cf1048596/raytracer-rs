@@ -55,6 +55,11 @@ impl Vec3 {
         self.get_len_squared().sqrt()
     }
 
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.e[0].abs() < s && self.e[1].abs() < s && self.e[2].abs() < s
+    }
+
     pub fn random() -> Self {
         Self::new(random_f64(), random_f64(), random_f64())
     }
@@ -65,9 +70,9 @@ impl Vec3 {
 }
 
 impl Neg for Vec3 {
-    type Output = Vec3;
-    fn neg(self) -> Vec3 {
-         Vec3 {
+    type Output = Self;
+    fn neg(self) -> Self {
+         Self {
             e: [-self.e[0], -self.e[1], -self.e[2]],
         }
     }
@@ -177,7 +182,7 @@ pub fn unit_vector(u: &Vec3) -> Vec3 {
     *u / u.get_len()
 }
 
-pub fn random_unit_vector(u: &Vec3) -> Vec3 {
+pub fn random_unit_vector() -> Vec3 {
     loop {
         let p = Vec3::random_range(-1_f64, 1_f64);
         let lensq = p.get_len_squared();
@@ -188,9 +193,21 @@ pub fn random_unit_vector(u: &Vec3) -> Vec3 {
 }
 
 pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
-    let on_unit_sphere = random_unit_vector(normal);
+    let on_unit_sphere = random_unit_vector();
     match dot(&on_unit_sphere, normal) {
         n if n > 0.0 =>  on_unit_sphere, //same hemisphere as the normal
         _ =>  -on_unit_sphere
     }
+}
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    *v - 2_f64 * dot(v, n) * *n
+}
+
+pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
+    let neg_uv = -*uv;
+    let cos_theta = dot(&neg_uv, n).min(1_f64);
+    let r_out_perpen = etai_over_etat * (*uv + cos_theta * *n);
+    let r_out_parallel = -((1.0 - r_out_perpen.get_len_squared()).abs().sqrt()) * *n;
+    r_out_perpen + r_out_parallel
 }

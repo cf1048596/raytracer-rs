@@ -210,3 +210,10 @@ pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
     let r_out_parallel = -((1.0 - r_out_perpen.get_len_squared()).abs().sqrt()) * *n;
     r_out_perpen + r_out_parallel
 }
+
+pub fn random_in_unit_disk() -> Vec3 {
+    loop {
+        let p = Vec3::new(random_f64_range(-1_f64, 1_f64), random_f64_range(-1_f64, 1_f64), 0_f64);
+        if p.get_len_squared() < 1_f64 { return p};
+    }
+}

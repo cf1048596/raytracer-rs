@@ -1,4 +1,4 @@
-use crate::{color::Color, ray::{HitRecord, Ray, Scatter}, vec3::{dot, random_unit_vector, reflect, unit_vector}};
+use crate::{color::Color, ray::{HitRecord, Ray, Scatter}, vec3::{dot, random_unit_vector, reflect, refract, unit_vector}};
 
 pub struct Lambertian {
     albedo: Color
@@ -47,5 +47,27 @@ impl Scatter for Metal {
         *scattered_ray = Ray::new(hit_rec.p, reflected);
         *attenuation = self.albedo;
         dot(&scattered_ray.dir(), &hit_rec.normal) > 0_f64
+    }
+}
+
+pub struct Dielectric {
+    refraction_idx : f64,
+}
+
+impl Dielectric {
+    pub fn new(refraction_idx: f64) -> Self {
+        Self {
+            refraction_idx,
+        }
+    }
+}
+
+impl Scatter for Dielectric {
+    fn scatter(&self, ray_in : &Ray, hit_rec: &HitRecord, attenuation: &mut Color, scattered_ray: &mut Ray) -> bool {
+        *attenuation = Color::new(1.0, 1.0, 1.0);
+        let ri = if hit_rec.front_face { 1.0 / self.refraction_idx} else { self.refraction_idx};
+        let unit_dir = unit_vector(&ray_in.dir());
+        let cos_theta = 
+        true
     }
 }

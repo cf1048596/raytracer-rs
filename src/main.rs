@@ -60,8 +60,8 @@ fn main() {
     let material3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     world.add(Rc::new(Sphere::new(Point3::new(4_f64, 1_f64, 0_f64), 1.0, material3)));
 
-    //aspect ratio, img_width, pixels_per_sample, depth, vertical angle fov
-    let mut cam : Camera = Camera::new(16_f64/9_f64, 1200, 500, 50, 20_f64);
+    //aspect ratio, img_width, samples_per_pixel, depth, vertical angle fov
+    let mut cam : Camera = Camera::new(16_f64/9_f64, 1200, 10, 50, 20_f64);
 
     cam.lookfrom = Point3::new(13.0,2.0,3.0);
     cam.lookat   = Point3::new(0.0,0.0,0.0);

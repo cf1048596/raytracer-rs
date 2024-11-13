@@ -1,4 +1,4 @@
-use crate::{color::Color, ray::{HitRecord, Ray, Scatter}, vec3::{dot, random_unit_vector, reflect, refract, unit_vector}};
+use crate::{color::Color, helper::random_f64, ray::{HitRecord, Ray, Scatter}, vec3::{dot, random_unit_vector, reflect, refract, unit_vector, Vec3}};
 
 pub struct Lambertian {
     albedo: Color
@@ -60,6 +60,12 @@ impl Dielectric {
             refraction_idx,
         }
     }
+
+    fn reflectance(&self, cos: f64) -> f64 {
+        //use Shlick's approximation of reflectance (idk who shlick is)
+        let r0 = (1_f64 - self.refraction_idx) / (1_f64 + self.refraction_idx).powi(2);
+        r0 + (1_f64-r0)*(1_f64-cos).powi(5)
+    }
 }
 
 impl Scatter for Dielectric {
@@ -67,7 +73,15 @@ impl Scatter for Dielectric {
         *attenuation = Color::new(1.0, 1.0, 1.0);
         let ri = if hit_rec.front_face { 1.0 / self.refraction_idx} else { self.refraction_idx};
         let unit_dir = unit_vector(&ray_in.dir());
-        let cos_theta = 
+        let cos_theta = dot(&(-unit_dir), &hit_rec.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta*cos_theta).sqrt();
+        
+        let direction = match ((ri * sin_theta > 1.0), self.reflectance(cos_theta) > random_f64()) {
+            (true, _) | (_, true) => reflect(&unit_dir, &hit_rec.normal),
+            _ => refract(&unit_dir, &hit_rec.normal, ri),
+        };
+        *scattered_ray = Ray::new(hit_rec.p, direction);
+
         true
     }
 }

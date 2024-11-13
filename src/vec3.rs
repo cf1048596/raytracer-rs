@@ -205,8 +205,7 @@ pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
 }
 
 pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
-    let neg_uv = -*uv;
-    let cos_theta = dot(&neg_uv, n).min(1_f64);
+    let cos_theta = dot(&(-*uv), n).min(1_f64);
     let r_out_perpen = etai_over_etat * (*uv + cos_theta * *n);
     let r_out_parallel = -((1.0 - r_out_perpen.get_len_squared()).abs().sqrt()) * *n;
     r_out_perpen + r_out_parallel

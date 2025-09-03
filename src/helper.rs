@@ -9,11 +9,11 @@ pub fn deg_to_rad(degrees: f64) -> f64 {
 
 pub fn random_f64() -> f64 {
     let mut rng = rand::thread_rng();
-    rng.gen::<f64>()
+    rng.r#gen::<f64>()
 }
 
 
 pub fn random_f64_range(min: f64, max: f64) -> f64 {
     let mut rng = rand::thread_rng();
-    min + (max - min) * rng.gen::<f64>()
+    min + (max - min) * rng.r#gen::<f64>()
 }

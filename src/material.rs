@@ -1,4 +1,4 @@
-use crate::{color::Color, helper::random_f64, ray::{HitRecord, Ray, Scatter}, vec3::{dot, random_unit_vector, reflect, refract, unit_vector, Vec3}};
+use crate::{color::Color, helper::random_f64, ray::{HitRecord, Ray, Scatter}, vec3::{dot, random_unit_vector, reflect, refract, unit_vector}};
 
 pub struct Lambertian {
     albedo: Color
@@ -13,7 +13,7 @@ impl Lambertian {
 }
 
 impl Scatter for Lambertian {
-    fn scatter(&self, ray_in : &Ray, hit_rec: &HitRecord, attenuation: &mut Color, scattered_ray: &mut Ray) -> bool {
+    fn scatter(&self, _: &Ray, hit_rec: &HitRecord, attenuation: &mut Color, scattered_ray: &mut Ray) -> bool {
         let mut scatter_direction = hit_rec.normal + random_unit_vector();
 
         if scatter_direction.near_zero() {

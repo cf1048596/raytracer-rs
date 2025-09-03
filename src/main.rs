@@ -9,7 +9,7 @@ mod material;
 
 use camera::Camera;
 use color::Color;
-use helper::{random_f64, random_f64_range, PI};
+use helper::{random_f64, random_f64_range};
 use material::Dielectric;
 use material::{Lambertian, Metal};
 use sphere::Sphere;
@@ -28,7 +28,7 @@ fn main() {
         for b in -11..11 {
             let choose_mat = random_f64();
             let center = Point3::new(a as f64 + 0.9*random_f64(), 0.2, b as f64 + 0.9*random_f64()); 
-            if ((center - Point3::new(4_f64, 0.2_f64, 0_f64)).get_len() > 0.9) {
+            if (center - Point3::new(4_f64, 0.2_f64, 0_f64)).get_len() > 0.9 {
                 let sphere_material : Rc<dyn Scatter>; 
                 match choose_mat {
                     x if x < 0.8 => {

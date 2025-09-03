@@ -1,5 +1,5 @@
-use std::{io::{self, Write}, rc::Rc, result};
-use crate::{color::{write_color, Color}, helper::{deg_to_rad, random_f64, random_f64_range}, interval::Interval, ray::{HitRecord, Hittable, Ray, Scatter}, vec3::{self, cross, random_in_unit_disk, random_on_hemisphere, random_unit_vector, unit_vector, Point3, Vec3}};
+use std::io::{self, Write};
+use crate::{color::{write_color, Color}, helper::deg_to_rad, random_f64, interval::Interval, ray::{HitRecord, Hittable, Ray}, vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3}};
 use crate::helper::INFINITY;
 
 pub struct Camera {
@@ -67,7 +67,7 @@ impl Camera {
 
             for x in 0..self.img_width {
                 let mut pixel_color : Color = Color::new_empty();
-                for sample in 0..self.samples_per_pixel {
+                for _ in 0..self.samples_per_pixel {
                     let ray = self.get_ray(x, y);
                     pixel_color += self.ray_color(&ray, world, self.max_depth);
                 }
@@ -114,6 +114,7 @@ impl Camera {
         self.defocus_disk_v = defocus_radius * self.u;
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn ray_color(&self, ray: &Ray, world: &dyn Hittable, depth: i32) -> Color {
         if depth <= 0 {
             return Color::new_empty();
@@ -123,7 +124,7 @@ impl Camera {
         if world.hit(ray, Interval::new(0.001, INFINITY), &mut hit_rec) {
             let mut scattered_ray : Ray = Ray::new_empty();
             let mut attenuation : Color =  Color::new_empty();
-            if hit_rec.mat.clone().expect("shouldn't crash rite").scatter(ray, &mut hit_rec, &mut attenuation, &mut scattered_ray) {
+            if hit_rec.mat.clone().unwrap().scatter(ray, &hit_rec, &mut attenuation, &mut scattered_ray) {
                 return attenuation * self.ray_color(&scattered_ray, world, depth-1);
             }
             return Color::new(0_f64, 0_f64, 0_f64);

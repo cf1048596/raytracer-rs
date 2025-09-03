@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{interval::Interval, ray::{Scatter, SetFaceNormal}, vec3::{dot, Point3}, Vec3};
+use crate::{interval::Interval, ray::{Scatter, SetFaceNormal}, vec3::{dot, Point3}};
 use crate::ray::Hittable;
 use crate::ray::HitRecord;
 use crate::ray::Ray;
